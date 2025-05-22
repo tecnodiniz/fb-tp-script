@@ -3,5 +3,6 @@ __pycache__
 
 *.xlsx
 
-data/
-data.json
+
+
+.env
