@@ -1,5 +1,6 @@
 import os
 import glob
+import re
 import shutil
 import pandas as pd
 from dotenv import load_dotenv
@@ -32,6 +33,9 @@ if len(files) >  0:
         
         df = pd.read_excel(file)
         df = df.drop(df.columns[0], axis=1)
+
+        df.columns = [re.sub(r"[\\/]", "-", col) for col in df.columns]
+        df.columns = [re.sub(r"NÚM.", "Número", col) for col in df.columns]
         df['__file__'] = os.path.basename(file)
 
         dataframe.append(df)
