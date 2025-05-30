@@ -28,34 +28,41 @@ files = glob.glob(path)
 dataframe = []
 
 if len(files) >  0:
-    for file in files:
-        print(f"reading: {file}")
-        
-        df = pd.read_excel(file)
-        df = df.drop(df.columns[0], axis=1)
+    try:
+        for file in files:
+            
+            print(f"reading: {file}")
+            
+            df = pd.read_excel(file)
+            df = df.drop(df.columns[0], axis=1)
 
-        df.columns = [re.sub(r"[\\/]", "-", col) for col in df.columns]
-        df.columns = [re.sub(r"NÚM.", "Número", col) for col in df.columns]
-        df['__file__'] = os.path.basename(file)
+            df.columns = [re.sub(r"[\\/]", "-", col) for col in df.columns]
+            df.columns = [re.sub(r"NÚM.", "Número", col) for col in df.columns]
+            # df['__file__'] = os.path.basename(file)
 
-        dataframe.append(df)
+            dataframe.append(df)
 
-        shutil.move(file, output + os.path.basename(file))
+            
+            df_final = pd.concat(dataframe, ignore_index=True)
+
+            json_data = df_final.to_json(orient="records", indent=4, force_ascii=False)
+
+           
+            
+            collection.insert_many(df_final.to_dict(orient="records"))
+
+            shutil.move(file, output + os.path.basename(file))
+            print("Files saved on MongoDB")
+
+            with open("producao.json",  "w", encoding='utf-8') as f:
+                f.write(json_data)
 
 
-    df_final = pd.concat(dataframe, ignore_index=True)
+            print("Files saved as data.json")
 
-    json_data = df_final.to_json(orient="records", indent=4, force_ascii=False)
+    except Exception as e:
+        print(f"error {e}")
 
-    collection.insert_many(df_final.to_dict(orient="records"))
-
-    print("Files saved on MongoDB")
-
-    with open("producao.json",  "w", encoding='utf-8') as f:
-        f.write(json_data)
-
-
-    print("Files saved as data.json")
 else: 
     print("0 files to process")
 
